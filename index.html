@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Productivity Research - Microsoft</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0078d4 0%, #5a67d8 50%, #7b68ee 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -300px;
+            right: -300px;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            bottom: -250px;
+            left: -250px;
+            animation: float 10s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-30px) scale(1.05); }
+        }
+
+        /* Expired Screen */
+        .expired-container {
+            display: none;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 30px 90px rgba(0,0,0,0.4);
+            max-width: 550px;
+            width: 100%;
+            padding: 70px 50px;
+            text-align: center;
+            z-index: 10;
+            animation: slideUp 0.6s ease;
+        }
+
+        .expired-container.active {
+            display: block;
+        }
+
+        .expired-icon {
+            font-size: 120px;
+            margin-bottom: 25px;
+            animation: shake 0.8s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+
+        .expired-container h1 {
+            color: #1a1a1a;
+            font-size: 36px;
+            margin-bottom: 18px;
+            font-weight: 700;
+        }
+
+        .expired-container p {
+            color: #666;
+            font-size: 17px;
+            line-height: 1.8;
+        }
+
+        .error-code {
+            display: inline-block;
+            background: #fee;
+            color: #c00;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        /* Main Container */
+        .container {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 30px 100px rgba(0,0,0,0.4);
+            max-width: 700px;
+            width: 100%;
+            padding: 0;
+            animation: slideUp 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Brand Header */
+        .brand-header {
+            background: linear-gradient(135deg, #0078d4 0%, #5a67d8 100%);
+            padding: 45px 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand-header::before {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: -100px;
+            right: -50px;
+        }
+
+        .brand-logo {
+            font-size: 17px;
+            color: rgba(255,255,255,0.95);
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .brand-header h1 {
+            color: white;
+            font-size: 32px;
+            margin-bottom: 12px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 45px 50px;
+        }
+
+        .progress-container {
+            margin-bottom: 40px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e8ecf4;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0078d4, #5a67d8, #7b68ee);
+            border-radius: 20px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 12.5%;
+            box-shadow: 0 0 10px rgba(0, 120, 212, 0.5);
+        }
+
+        /* Question Card */
+        .question-card {
+            display: none;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .question-card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .question-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #e8f4ff, #f0f7ff);
+            color: #0078d4;
+            padding: 8px 18px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border: 2px solid #d0e7ff;
+        }
+
+        .question-text {
+            font-size: 24px;
+            color: #1a1a1a;
+            margin-bottom: 32px;
+            font-weight: 700;
+            line-height: 1.5;
+            letter-spacing: -0.3px;
+        }
+
+        /* Options */
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .option {
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            border: 3px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 22px 24px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 120, 212, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .option:hover::before {
+            left: 100%;
+        }
+
+        .option:hover {
+            border-color: #0078d4;
+            background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%);
+            transform: translateX(8px);
+            box-shadow: 0 8px 24px rgba(0, 120, 212, 0.2);
+        }
+
+        .option input[type="radio"] {
+            width: 24px;
+            height: 24px;
+            accent-color: #0078d4;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .option-letter {
+            background: linear-gradient(135deg, #0078d4, #5a67d8);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            z-index: 1;
+            box-shadow: 0 4px 12px rgba(0, 120, 212, 0.3);
+        }
+
+        .option label {
+            cursor: pointer;
+            font-size: 17px;
+            color: #333;
+            flex: 1;
+            font-weight: 600;
+            z-index: 1;
+            line-height: 1.5;
+        }
+
+        .option.selected {
+            border-color: #0078d4;
+            background: linear-gradient(135deg, #e8f4ff 0%, #d0e7ff 100%);
+            box-shadow: 0 8px 32px rgba(0, 120, 212, 0.3);
+            transform: scale(1.02);
+        }
+
+        .option.selected .option-letter {
+            background: linear-gradient(135deg, #7b68ee, #5a67d8);
+            animation: pulse 0.6s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 18px;
+            margin-top: 40px;
+        }
+
+        button {
+            flex: 1;
+            padding: 18px 28px;
+            border: none;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #0078d4, #5a67d8, #7b68ee);
+            color: white;
+            box-shadow: 0 8px 24px rgba(0, 120, 212, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-next::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-next:hover::before {
+            left: 100%;
+        }
+
+        .btn-next:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(0, 120, 212, 0.5);
+        }
+
+        .btn-next:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-next:disabled {
+            background: linear-gradient(135deg, #d1d5db, #9ca3af);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.6;
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            color: #6b7280;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn-back:hover {
+            background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+            color: #4b5563;
+            transform: translateX(-4px);
+        }
+
+        /* Completion Screen */
+        .completion-screen {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .completion-screen.active {
+            display: block;
+            animation: fadeIn 0.7s ease;
+        }
+
+        .completion-icon {
+            font-size: 100px;
+            margin-bottom: 30px;
+            animation: bounce 0.8s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-25px) scale(1.1); }
+        }
+
+        .completion-screen h2 {
+            color: #0078d4;
+            font-size: 36px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .completion-screen p {
+            color: #666;
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 28px;
+        }
+
+        .score-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #0078d4, #5a67d8, #7b68ee);
+            color: white;
+            padding: 20px 45px;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 30px;
+            box-shadow: 0 12px 32px rgba(0, 120, 212, 0.4);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 12px 32px rgba(0, 120, 212, 0.4); }
+            50% { box-shadow: 0 12px 48px rgba(0, 120, 212, 0.6); }
+        }
+
+        /* Timer & Security */
+        .timer {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 14px;
+            margin-top: 30px;
+            font-weight: 600;
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 25px;
+            color: #9ca3af;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .security-badge::before {
+            content: '🔒';
+            font-size: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 650px) {
+            .container {
+                border-radius: 20px;
+            }
+
+            .brand-header {
+                padding: 35px 30px;
+            }
+
+            .brand-header h1 {
+                font-size: 26px;
+            }
+
+            .content-area {
+                padding: 35px 30px;
+            }
+
+            .question-text {
+                font-size: 20px;
+            }
+
+            .option {
+                padding: 18px 20px;
+            }
+
+            .option label {
+                font-size: 15px;
+            }
+
+            .option-letter {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+
+            button {
+                padding: 16px 24px;
+                font-size: 15px;
+            }
+
+            .completion-icon {
+                font-size: 80px;
+            }
+
+            .completion-screen h2 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Expired Screen -->
+    <div class="expired-container" id="expiredScreen">
+        <div class="expired-icon">⏰</div>
+        <h1>Survey Link Expired</h1>
+        <p>This survey link has expired for security reasons.<br><br>Please request a new link to participate in this research study.</p>
+        <div class="error-code">ERROR 404 - LINK NOT FOUND</div>
+    </div>
+
+    <!-- Main Survey Container -->
+    <div class="container" id="mainContainer">
+        <div class="brand-header">
+            <div class="brand-logo">Microsoft Research</div>
+            <h1>Developer Productivity Study</h1>
+            <p>Help us understand how engineers work today</p>
+        </div>
+
+        <div class="content-area">
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Your Progress</span>
+                    <span id="progressText">1 of 8</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+            </div>
+
+            <div id="surveyForm">
+                <!-- Questions will be generated here -->
+            </div>
+
+            <div class="completion-screen" id="completionScreen">
+                <div class="completion-icon">✨</div>
+                <h2>Survey Completed!</h2>
+                <p>Your insights are incredibly valuable to our research.<br><br>Our team will review all responses and reach out to qualified participants for our exclusive beta program.</p>
+                <div class="score-badge">✓ Response Recorded Successfully</div>
+                <p style="margin-top: 40px; font-size: 15px; color: #999;">This window will close automatically in 3 seconds...</p>
+            </div>
+
+            <div class="timer" id="timer"></div>
+            <div class="security-badge">End-to-end encrypted • Auto-deletes in 5 minutes</div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Configuration
+        const PAGE_LOAD_TIME = Date.now();
+        const EXPIRY_TIME = 5 * 60 * 1000; // 5 minutes
+
+        // Survey Questions - Psychological & Strategic
+        const questions = [
+            {
+                id: 1,
+                text: "In a typical week, how much time do you spend fixing unexpected issues in your code?",
+                options: [
+                    { letter: "A", label: "Less than 3 hours - I rarely encounter major issues", score: 5 },
+                    { letter: "B", label: "3-8 hours - It's manageable but frustrating", score: 15 },
+                    { letter: "C", label: "8-15 hours - It significantly impacts my velocity", score: 25 },
+                    { letter: "D", label: "15+ hours - It's my biggest productivity drain", score: 35 }
+                ]
+            },
+            {
+                id: 2,
+                text: "What causes the most friction when you're trying to ship features quickly?",
+                options: [
+                    { letter: "A", label: "Understanding why something broke in the first place", score: 20 },
+                    { letter: "B", label: "Gathering scattered information from multiple sources", score: 25 },
+                    { letter: "C", label: "Context switching between tools and environments", score: 15 },
+                    { letter: "D", label: "Documenting fixes and creating proper pull requests", score: 10 }
+                ]
+            },
+            {
+                id: 3,
+                text: "When you encounter a complex technical problem, what's your first instinct?",
+                options: [
+                    { letter: "A", label: "Ask AI assistants or use automated tools first", score: 20 },
+                    { letter: "B", label: "Reach out to experienced teammates for guidance", score: 10 },
+                    { letter: "C", label: "Deep dive into documentation and Stack Overflow", score: 15 },
+                    { letter: "D", label: "Trial and error until something works", score: 5 }
+                ]
+            },
+            {
+                id: 4,
+                text: "If you could eliminate ONE thing from your workflow tomorrow, what would create the most impact?",
+                options: [
+                    { letter: "A", label: "Time spent tracking down root causes of failures", score: 25 },
+                    { letter: "B", label: "Repetitive bugs that keep reappearing across sprints", score: 20 },
+                    { letter: "C", label: "Manual documentation and PR writing overhead", score: 15 },
+                    { letter: "D", label: "Constantly jumping between different debugging tools", score: 18 }
+                ]
+            },
+            {
+                id: 5,
+                text: "Imagine a tool that saves you 6-8 productive hours every single week. What feels right to you?",
+                options: [
+                    { letter: "A", label: "I'd want to test it completely risk-free first", score: 20 },
+                    { letter: "B", label: "₹500-800/month seems reasonable for that ROI", score: 45 },
+                    { letter: "C", label: "₹1500-2000/month if it truly delivers results", score: 50 },
+                    { letter: "D", label: "Honestly, I'd rather stick with my current setup", score: -25 }
+                ]
+            },
+            {
+                id: 6,
+                text: "Which capability would make you say 'I need this in my workflow yesterday'?",
+                options: [
+                    { letter: "A", label: "Automatically analyzing errors from screenshots and logs", score: 25 },
+                    { letter: "B", label: "Remembering past bugs and preventing them proactively", score: 30 },
+                    { letter: "C", label: "Generating pull requests with proper context automatically", score: 18 },
+                    { letter: "D", label: "Working seamlessly across any IDE or environment", score: 15 }
+                ]
+            },
+            {
+                id: 7,
+                text: "How urgently do you need a breakthrough in your current development workflow?",
+                options: [
+                    { letter: "A", label: "Right now - I'm actively searching for better solutions", score: 30 },
+                    { letter: "B", label: "Within the next 30 days would be ideal timing", score: 20 },
+                    { letter: "C", label: "Sometime in the next quarter when bandwidth opens up", score: 8 },
+                    { letter: "D", label: "I'm managing fine with what I have currently", score: 0 }
+                ]
+            },
+            {
+                id: 8,
+                text: "If we offered exclusive early access to a game-changing productivity tool, you would:",
+                options: [
+                    { letter: "A", label: "Absolutely sign me up - I want first access immediately", score: 40 },
+                    { letter: "B", label: "Probably interested - tell me more details first", score: 20 },
+                    { letter: "C", label: "I know someone on my team who'd be perfect for this", score: 25 },
+                    { letter: "D", label: "Not interested in beta programs right now", score: 0 }
+                ]
+            }
+        ];
+
+        let currentQuestion = 0;
+        let answers = {};
+        let totalScore = 0;
+        let checkExpiryInterval;
+
+        // Check if survey expired
+        function checkExpiry() {
+            const elapsed = Date.now() - PAGE_LOAD_TIME;
+            if (elapsed >= EXPIRY_TIME) {
+                showExpired();
+                clearInterval(checkExpiryInterval);
+            }
+        }
+
+        // Show expired screen
+        function showExpired() {
+            document.getElementById('mainContainer').style.display = 'none';
+            document.getElementById('expiredScreen').classList.add('active');
+            localStorage.clear();
+        }
+
+        // Initialize
+        function init() {
+            checkExpiry();
+            checkExpiryInterval = setInterval(checkExpiry, 1000);
+            renderQuestion();
+            updateTimer();
+        }
+
+        // Render current question
+        function renderQuestion() {
+            const surveyForm = document.getElementById('surveyForm');
+            const question = questions[currentQuestion];
+            
+            surveyForm.innerHTML = `
+                <div class="question-card active">
+                    <div class="question-badge">Question ${currentQuestion + 1} of ${questions.length}</div>
+                    <div class="question-text">${question.text}</div>
+                    <div class="options">
+                        ${question.options.map(option => `
+                            <div class="option" data-letter="${option.letter}">
+                                <input type="radio" 
+                                       name="q${question.id}" 
+                                       id="q${question.id}_${option.letter}" 
+                                       value="${option.letter}"
+                                       ${answers[question.id] === option.letter ? 'checked' : ''}>
+                                <div class="option-letter">${option.letter}</div>
+                                <label for="q${question.id}_${option.letter}">${option.label}</label>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="button-group">
+                        ${currentQuestion > 0 ? '<button class="btn-back" onclick="window.goBack()">← Previous</button>' : ''}
+                        <button class="btn-next" id="nextBtn" ${!answers[question.id] ? 'disabled' : ''}>
+                            ${currentQuestion === questions.length - 1 ? 'Submit Response' : 'Continue →'}
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Add click handlers
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    const radio = this.querySelector('input[type="radio"]');
+                    radio.checked = true;
+                    handleAnswerSelect();
+                });
+            });
+
+            document.getElementById('nextBtn').addEventListener('click', handleNext);
+            updateProgressBar();
+        }
+
+        // Handle answer selection
+        function handleAnswerSelect() {
+            const question = questions[currentQuestion];
+            const selected = document.querySelector(`input[name="q${question.id}"]:checked`);
+            
+            if (selected) {
+                answers[question.id] = selected.value;
+                document.getElementById('nextBtn').disabled = false;
+                
+                document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+                selected.closest('.option').classList.add('selected');
+            }
+        }
+
+        // Handle next button
+        function handleNext() {
+            const question = questions[currentQuestion];
+            const selectedOption = question.options.find(opt => opt.letter === answers[question.id]);
+            
+            if (selectedOption) {
+                totalScore += selectedOption.score;
+            }
+
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                renderQuestion();
+            } else {
+                showCompletion();
+                saveToStorage();
+                
+                setTimeout(() => {
+                    window.close();
+                }, 3000);
+            }
+        }
+
+        // Go back
+        window.goBack = function() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                renderQuestion();
+            }
+        }
+
+        // Update progress bar
+        function updateProgressBar() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${currentQuestion + 1} of ${questions.length}`;
+        }
+
+        // Show completion screen
+        function showCompletion() {
+            document.getElementById('surveyForm').style.display = 'none';
+            document.getElementById('completionScreen').classList.add('active');
+            document.getElementById('progressBar').style.width = '100%';
+            document.getElementById('progressText').textContent = 'Completed ✓';
+        }
+
+        // Save to localStorage
+        function saveToStorage() {
+            const sessionId = 'survey_' + Date.now();
+            const data = {
+                sessionId: sessionId,
+                answers: answers,
+                score: totalScore,
+                qualified: totalScore >= 70,
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                willAutoDelete: new Date(Date.now() + 5 * 60 * 1000).toISOString()
+            };
+
+            localStorage.setItem(sessionId, JSON.stringify(data));
+            
+            let allResponses = JSON.parse(localStorage.getItem('all_survey_responses') || '[]');
+            allResponses.push(data);
+            localStorage.setItem('all_survey_responses', JSON.stringify(allResponses));
+
+            setTimeout(() => {
+                localStorage.removeItem(sessionId);
+                const updated = allResponses.filter(r => r.sessionId !== sessionId);
+                localStorage.setItem('all_survey_responses', JSON.stringify(updated));
+            }, 5 * 60 * 1000);
+        }
+
+        // Update timer display
+        function updateTimer() {
+            setInterval(() => {
+                const elapsed = Math.floor((Date.now() - PAGE_LOAD_TIME) / 1000);
+                const remaining = Math.max(0, 300 - elapsed);
+                const minutes = Math.floor(remaining / 60);
+                const seconds = remaining % 60;
+                
+                document.getElementById('timer').textContent = 
+                    `⏱ Survey expires in: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    
+                if (remaining === 0) {
+                    showExpired();
+                }
+            }, 1000);
+        }
+
+        init();
+    </script>
+</body>
+</html>
