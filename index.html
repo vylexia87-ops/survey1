@@ -1,15 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="overflow-y: auto;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Developer Productivity Research - Microsoft</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
+    <link rel="icon" href="image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        html {
+            overflow-y: auto;
+            scroll-behavior: smooth;
         }
 
         body {
@@ -21,7 +26,7 @@
             align-items: center;
             padding: 20px;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         body::before {
@@ -53,7 +58,6 @@
             50% { transform: translateY(-30px) scale(1.05); }
         }
 
-        /* Expired Screen */
         .expired-container {
             display: none;
             background: white;
@@ -107,7 +111,6 @@
             font-size: 14px;
         }
 
-        /* Main Container */
         .container {
             background: white;
             border-radius: 28px;
@@ -131,7 +134,6 @@
             }
         }
 
-        /* Brand Header */
         .brand-header {
             background: linear-gradient(135deg, #0078d4 0%, #5a67d8 100%);
             padding: 45px 50px;
@@ -174,7 +176,6 @@
             font-weight: 400;
         }
 
-        /* Content Area */
         .content-area {
             padding: 45px 50px;
         }
@@ -206,11 +207,10 @@
             background: linear-gradient(90deg, #0078d4, #5a67d8, #7b68ee);
             border-radius: 20px;
             transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 12.5%;
+            width: 0%;
             box-shadow: 0 0 10px rgba(0, 120, 212, 0.5);
         }
 
-        /* Question Card */
         .question-card {
             display: none;
             animation: fadeIn 0.6s ease;
@@ -252,7 +252,6 @@
             letter-spacing: -0.3px;
         }
 
-        /* Options */
         .options {
             display: flex;
             flex-direction: column;
@@ -345,7 +344,24 @@
             50% { transform: scale(1.15); }
         }
 
-        /* Buttons */
+        .input-field {
+            width: 100%;
+            padding: 18px 24px;
+            border: 3px solid #e5e7eb;
+            border-radius: 14px;
+            font-size: 17px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #0078d4;
+            background: white;
+            box-shadow: 0 4px 16px rgba(0, 120, 212, 0.2);
+        }
+
         .button-group {
             display: flex;
             gap: 18px;
@@ -418,7 +434,6 @@
             transform: translateX(-4px);
         }
 
-        /* Completion Screen */
         .completion-screen {
             display: none;
             text-align: center;
@@ -473,7 +488,6 @@
             50% { box-shadow: 0 12px 48px rgba(0, 120, 212, 0.6); }
         }
 
-        /* Timer & Security */
         .timer {
             text-align: center;
             color: #9ca3af;
@@ -498,7 +512,6 @@
             font-size: 16px;
         }
 
-        /* Responsive */
         @media (max-width: 650px) {
             .container {
                 border-radius: 20px;
@@ -550,7 +563,6 @@
     </style>
 </head>
 <body>
-    <!-- Expired Screen -->
     <div class="expired-container" id="expiredScreen">
         <div class="expired-icon">⏰</div>
         <h1>Survey Link Expired</h1>
@@ -558,7 +570,6 @@
         <div class="error-code">ERROR 404 - LINK NOT FOUND</div>
     </div>
 
-    <!-- Main Survey Container -->
     <div class="container" id="mainContainer">
         <div class="brand-header">
             <div class="brand-logo">Microsoft Research</div>
@@ -570,16 +581,14 @@
             <div class="progress-container">
                 <div class="progress-label">
                     <span>Your Progress</span>
-                    <span id="progressText">1 of 8</span>
+                    <span id="progressText">0 of 10</span>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressBar"></div>
                 </div>
             </div>
 
-            <div id="surveyForm">
-                <!-- Questions will be generated here -->
-            </div>
+            <div id="surveyForm"></div>
 
             <div class="completion-screen" id="completionScreen">
                 <div class="completion-icon">✨</div>
@@ -595,12 +604,21 @@
     </div>
 
     <script type="module">
-        // Configuration
         const PAGE_LOAD_TIME = Date.now();
-        const EXPIRY_TIME = 5 * 60 * 1000; // 5 minutes
+        const EXPIRY_TIME = 5 * 60 * 1000;
+        const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwxY4nYHHpmnr07QmCZvywck4WCdcxCbMUvIPsNPtDRbrroA3LCX8lS97jPJSLUF4Q5/exec';
 
-        // Survey Questions - Psychological & Strategic
         const questions = [
+            {
+                id: 0,
+                text: "First, tell us about yourself - What is your role or title?",
+                options: [
+                    { letter: "A", label: "Developer"},
+                    { letter: "B", label: "Senior Developer" },
+                    { letter: "C", label: "Engineer" },
+                    { letter: "D", label: "Student"}
+                ]
+            },
             {
                 id: 1,
                 text: "In a typical week, how much time do you spend fixing unexpected issues in your code?",
@@ -680,7 +698,7 @@
                     { letter: "C", label: "I know someone on my team who'd be perfect for this", score: 25 },
                     { letter: "D", label: "Not interested in beta programs right now", score: 0 }
                 ]
-            }
+            },
         ];
 
         let currentQuestion = 0;
@@ -688,7 +706,6 @@
         let totalScore = 0;
         let checkExpiryInterval;
 
-        // Check if survey expired
         function checkExpiry() {
             const elapsed = Date.now() - PAGE_LOAD_TIME;
             if (elapsed >= EXPIRY_TIME) {
@@ -697,14 +714,12 @@
             }
         }
 
-        // Show expired screen
         function showExpired() {
             document.getElementById('mainContainer').style.display = 'none';
             document.getElementById('expiredScreen').classList.add('active');
             localStorage.clear();
         }
 
-        // Initialize
         function init() {
             checkExpiry();
             checkExpiryInterval = setInterval(checkExpiry, 1000);
@@ -712,51 +727,75 @@
             updateTimer();
         }
 
-        // Render current question
         function renderQuestion() {
             const surveyForm = document.getElementById('surveyForm');
             const question = questions[currentQuestion];
             
-            surveyForm.innerHTML = `
-                <div class="question-card active">
-                    <div class="question-badge">Question ${currentQuestion + 1} of ${questions.length}</div>
-                    <div class="question-text">${question.text}</div>
-                    <div class="options">
-                        ${question.options.map(option => `
-                            <div class="option" data-letter="${option.letter}">
-                                <input type="radio" 
-                                       name="q${question.id}" 
-                                       id="q${question.id}_${option.letter}" 
-                                       value="${option.letter}"
-                                       ${answers[question.id] === option.letter ? 'checked' : ''}>
-                                <div class="option-letter">${option.letter}</div>
-                                <label for="q${question.id}_${option.letter}">${option.label}</label>
-                            </div>
-                        `).join('')}
+            if (question.type === 'text') {
+                surveyForm.innerHTML = `
+                    <div class="question-card active">
+                        <div class="question-badge">Question ${currentQuestion + 1} of ${questions.length}</div>
+                        <div class="question-text">${question.text}</div>
+                        <input type="text" 
+                               class="input-field" 
+                               id="textInput" 
+                               placeholder="${question.placeholder}"
+                               value="${answers[question.id] || ''}"
+                               autocomplete="off">
+                        <div class="button-group">
+                            ${currentQuestion > 0 ? '<button class="btn-back" onclick="window.goBack()">← Previous</button>' : ''}
+                            <button class="btn-next" id="nextBtn" ${!answers[question.id] ? 'disabled' : ''}>
+                                ${currentQuestion === questions.length - 1 ? 'Submit Response' : 'Continue →'}
+                            </button>
+                        </div>
                     </div>
-                    <div class="button-group">
-                        ${currentQuestion > 0 ? '<button class="btn-back" onclick="window.goBack()">← Previous</button>' : ''}
-                        <button class="btn-next" id="nextBtn" ${!answers[question.id] ? 'disabled' : ''}>
-                            ${currentQuestion === questions.length - 1 ? 'Submit Response' : 'Continue →'}
-                        </button>
-                    </div>
-                </div>
-            `;
+                `;
 
-            // Add click handlers
-            document.querySelectorAll('.option').forEach(opt => {
-                opt.addEventListener('click', function() {
-                    const radio = this.querySelector('input[type="radio"]');
-                    radio.checked = true;
-                    handleAnswerSelect();
+                const input = document.getElementById('textInput');
+                input.addEventListener('input', function() {
+                    answers[question.id] = this.value.trim();
+                    document.getElementById('nextBtn').disabled = !this.value.trim();
                 });
-            });
+            } else {
+                surveyForm.innerHTML = `
+                    <div class="question-card active">
+                        <div class="question-badge">Question ${currentQuestion + 1} of ${questions.length}</div>
+                        <div class="question-text">${question.text}</div>
+                        <div class="options">
+                            ${question.options.map(option => `
+                                <div class="option" data-letter="${option.letter}">
+                                    <input type="radio" 
+                                           name="q${question.id}" 
+                                           id="q${question.id}_${option.letter}" 
+                                           value="${option.letter}"
+                                           ${answers[question.id] === option.letter ? 'checked' : ''}>
+                                    <div class="option-letter">${option.letter}</div>
+                                    <label for="q${question.id}_${option.letter}">${option.label}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="button-group">
+                            ${currentQuestion > 0 ? '<button class="btn-back" onclick="window.goBack()">← Previous</button>' : ''}
+                            <button class="btn-next" id="nextBtn" ${!answers[question.id] ? 'disabled' : ''}>
+                                ${currentQuestion === questions.length - 1 ? 'Submit Response' : 'Continue →'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                document.querySelectorAll('.option').forEach(opt => {
+                    opt.addEventListener('click', function() {
+                        const radio = this.querySelector('input[type="radio"]');
+                        radio.checked = true;
+                        handleAnswerSelect();
+                    });
+                });
+            }
 
             document.getElementById('nextBtn').addEventListener('click', handleNext);
             updateProgressBar();
         }
 
-        // Handle answer selection
         function handleAnswerSelect() {
             const question = questions[currentQuestion];
             const selected = document.querySelector(`input[name="q${question.id}"]:checked`);
@@ -770,13 +809,14 @@
             }
         }
 
-        // Handle next button
         function handleNext() {
             const question = questions[currentQuestion];
-            const selectedOption = question.options.find(opt => opt.letter === answers[question.id]);
             
-            if (selectedOption) {
-                totalScore += selectedOption.score;
+            if (question.options) {
+                const selectedOption = question.options.find(opt => opt.letter === answers[question.id]);
+                if (selectedOption) {
+                    totalScore += selectedOption.score;
+                }
             }
 
             if (currentQuestion < questions.length - 1) {
@@ -792,7 +832,6 @@
             }
         }
 
-        // Go back
         window.goBack = function() {
             if (currentQuestion > 0) {
                 currentQuestion--;
@@ -800,14 +839,12 @@
             }
         }
 
-        // Update progress bar
         function updateProgressBar() {
             const progress = ((currentQuestion + 1) / questions.length) * 100;
             document.getElementById('progressBar').style.width = progress + '%';
             document.getElementById('progressText').textContent = `${currentQuestion + 1} of ${questions.length}`;
         }
 
-        // Show completion screen
         function showCompletion() {
             document.getElementById('surveyForm').style.display = 'none';
             document.getElementById('completionScreen').classList.add('active');
@@ -815,14 +852,15 @@
             document.getElementById('progressText').textContent = 'Completed ✓';
         }
 
-        // Save to localStorage
-        function saveToStorage() {
+        async function saveToStorage() {
             const sessionId = 'survey_' + Date.now();
             const data = {
                 sessionId: sessionId,
+                role: answers[0] || '',
                 answers: answers,
                 score: totalScore,
                 qualified: totalScore >= 70,
+                email: answers[9] || '',
                 timestamp: new Date().toISOString(),
                 userAgent: navigator.userAgent,
                 willAutoDelete: new Date(Date.now() + 5 * 60 * 1000).toISOString()
@@ -834,6 +872,31 @@
             allResponses.push(data);
             localStorage.setItem('all_survey_responses', JSON.stringify(allResponses));
 
+            try {
+                const formData = new FormData();
+                formData.append('timestamp', data.timestamp);
+                formData.append('role', data.role);
+                formData.append('q1', answers[1] || '');
+                formData.append('q2', answers[2] || '');
+                formData.append('q3', answers[3] || '');
+                formData.append('q4', answers[4] || '');
+                formData.append('q5', answers[5] || '');
+                formData.append('q6', answers[6] || '');
+                formData.append('q7', answers[7] || '');
+                formData.append('q8', answers[8] || '');
+                formData.append('score', data.score);
+                formData.append('qualified', data.qualified);
+                formData.append('email', data.email);
+
+                await fetch(GOOGLE_SHEET_URL, {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'no-cors'
+                });
+            } catch (error) {
+                console.error('Failed to save to Google Sheets:', error);
+            }
+
             setTimeout(() => {
                 localStorage.removeItem(sessionId);
                 const updated = allResponses.filter(r => r.sessionId !== sessionId);
@@ -841,7 +904,6 @@
             }, 5 * 60 * 1000);
         }
 
-        // Update timer display
         function updateTimer() {
             setInterval(() => {
                 const elapsed = Math.floor((Date.now() - PAGE_LOAD_TIME) / 1000);
